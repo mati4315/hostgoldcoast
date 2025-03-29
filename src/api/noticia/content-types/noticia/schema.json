@@ -4,7 +4,7 @@
   "info": {
     "singularName": "noticia",
     "pluralName": "noticias",
-    "displayName": "Noticias",
+    "displayName": "Noticia",
     "description": ""
   },
   "options": {
@@ -12,18 +12,23 @@
   },
   "attributes": {
     "title": {
-      "type": "string"
-    },
-    "link": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
       "type": "text"
     },
-    "published_date": {
-      "type": "date"
+    "link": {
+      "type": "string",
+      "unique": true
+    },
+    "pubDate": {
+      "type": "datetime"
     },
     "imagen": {
+      "type": "string"
+    },
+    "audioUrl": {
       "type": "string"
     }
   }

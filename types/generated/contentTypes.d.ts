@@ -373,7 +373,7 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
   collectionName: 'noticias';
   info: {
     description: '';
-    displayName: 'Noticias';
+    displayName: 'Noticia';
     pluralName: 'noticias';
     singularName: 'noticia';
   };
@@ -381,21 +381,22 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    audioUrl: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     imagen: Schema.Attribute.String;
-    link: Schema.Attribute.String;
+    link: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::noticia.noticia'
     > &
       Schema.Attribute.Private;
-    published_date: Schema.Attribute.Date;
+    pubDate: Schema.Attribute.DateTime;
     publishedAt: Schema.Attribute.DateTime;
-    title: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -2,11 +2,19 @@ require('dotenv').config();
 const Parser = require('rss-parser');
 const parser = new Parser();
 const axios = require('axios');
+const cheerio = require('cheerio');
+const fs = require('fs');
+const path = require('path');
+const textToSpeech = require('@google-cloud/text-to-speech');
 
 const STRAPI_URL = 'http://localhost:1337/api';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 const RSS_FEED_URL = process.env.RSS_FEED_URL;
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+// Configuración de Google Cloud Text-to-Speech
+const client = new textToSpeech.TextToSpeechClient({
+  keyFilename: path.join(__dirname, '../config/google-credentials.json')
+});
 
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -14,45 +22,44 @@ function formatDate(dateString) {
 }
 
 async function createSummary(text) {
-    try {
-        const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-            model: "deepseek-chat",
-            messages: [
-                {
-                    role: "system",
-                    content: "Eres un experto en crear resúmenes concisos y claros. Tu tarea es resumir el texto proporcionado usando palabras sencillas y manteniendo la información más importante. Devuelve solo el texto del resumen, sin títulos ni formato especial."
-                },
-                {
-                    role: "user",
-                    content: `Por favor, crea un resumen conciso y claro del siguiente texto usando palabras sencillas:\n\n${text}`
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 500
-        }, {
-            headers: {
-                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
+  try {
+    const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system",
+          content: "Eres un asistente experto en crear resúmenes concisos y claros. Tu tarea es resumir el texto proporcionado en un párrafo corto, manteniendo los puntos clave y la información más relevante. No uses títulos ni formato especial, solo el texto del resumen."
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 150
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-        // Limpiar el formato del resumen
-        let summary = response.data.choices[0].message.content.trim();
-        
-        // Eliminar marcadores de formato
-        summary = summary.replace(/\*\*/g, '')  // Eliminar **
-                        .replace(/\*/g, '')      // Eliminar *
-                        .replace(/^Resumen:?\s*/i, '')  // Eliminar "Resumen:" al inicio
-                        .replace(/^Resumen conciso:?\s*/i, '')  // Eliminar "Resumen conciso:" al inicio
-                        .replace(/\n+/g, ' ')    // Reemplazar saltos de línea por espacios
-                        .replace(/\s+/g, ' ')    // Eliminar espacios múltiples
-                        .trim();                 // Eliminar espacios al inicio y final
+    let summary = response.data.choices[0].message.content;
+    
+    // Limpiar el formato del resumen
+    summary = summary
+      .replace(/\*\*/g, '') // Eliminar negrita
+      .replace(/\*/g, '')   // Eliminar cursiva
+      .replace(/^Resumen:?\s*/i, '') // Eliminar "Resumen:" al inicio
+      .replace(/\n/g, ' ')  // Eliminar saltos de línea
+      .replace(/\s+/g, ' ') // Eliminar espacios múltiples
+      .trim();              // Eliminar espacios al inicio y final
 
-        return summary;
-    } catch (error) {
-        console.error('Error al crear el resumen:', error.message);
-        return text; // Si hay un error, devolver el texto original
-    }
+    return summary;
+  } catch (error) {
+    console.error('Error al crear el resumen:', error);
+    return text.substring(0, 200) + '...'; // Fallback a un resumen simple
+  }
 }
 
 function cleanHtml(html) {
@@ -115,6 +122,43 @@ function extractImageUrl(content) {
     return null;
 }
 
+async function generateAudio(text, title) {
+  try {
+    // Limpiar el título para usarlo como nombre de archivo
+    const cleanTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    // Crear directorio para los archivos de audio si no existe
+    const audioDir = path.join(__dirname, '../public/uploads/audio');
+    if (!fs.existsSync(audioDir)) {
+      fs.mkdirSync(audioDir, { recursive: true });
+    }
+
+    const outputFile = path.join(audioDir, `${cleanTitle}.mp3`);
+
+    // Configurar la solicitud
+    const request = {
+      input: { text },
+      voice: { languageCode: 'es-ES', ssmlGender: 'NEUTRAL' },
+      audioConfig: { audioEncoding: 'MP3' },
+    };
+
+    // Realizar la solicitud a la API
+    const [response] = await client.synthesizeSpeech(request);
+
+    // Guardar el archivo de audio
+    fs.writeFileSync(outputFile, response.audioContent, 'binary');
+
+    // Retornar la URL relativa del archivo
+    return `/uploads/audio/${cleanTitle}.mp3`;
+  } catch (error) {
+    console.error('Error al generar el audio:', error);
+    return null;
+  }
+}
+
 async function fetchAndSaveNews() {
     try {
         console.log('Iniciando proceso de scraping...');
@@ -165,15 +209,19 @@ async function fetchAndSaveNews() {
                 console.log(summary);
                 console.log('----------------------------------------\n');
 
+                // Generar audio del resumen
+                const audioUrl = await generateAudio(summary, latestNews.title);
+
                 // Crear nueva noticia
                 const postData = {
                     data: {
                         title: latestNews.title,
                         link: latestNews.link,
                         description: summary,
-                        published_date: formatDate(latestNews.pubDate),
-                        publishedAt: formatDate(new Date()),
-                        imagen: imageUrl
+                        pubDate: new Date(latestNews.pubDate),
+                        publishedAt: new Date(),
+                        imagen: imageUrl,
+                        audioUrl: audioUrl
                     }
                 };
 

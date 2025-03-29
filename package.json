@@ -15,10 +15,12 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.0.1",
     "@strapi/plugin-cloud": "5.12.1",
     "@strapi/plugin-users-permissions": "5.12.1",
     "@strapi/strapi": "5.12.1",
     "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
     "pg": "8.8.0",
     "react": "^18.0.0",
