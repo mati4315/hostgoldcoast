@@ -8,6 +8,9 @@
 - Integración con Google Cloud Text-to-Speech para generación de audio
 - Modelo de contenido "noticia" en Strapi
 - Sistema de verificación de duplicados
+- Nuevo campo `description_es` al modelo Noticia para almacenar la traducción al español
+- Nuevo servicio de traducción usando la API de DeepSeek
+- Integración de traducción automática al español en el proceso de scraping
 
 ### Mejorado
 - Reorganización del código en módulos separados:
@@ -17,6 +20,8 @@
 - Mejor manejo de errores en todas las operaciones
 - Limpieza y formateo de resúmenes
 - Sistema de nombres de archivo para audio basado en títulos
+- Modificado el script de scraping para incluir la traducción al español
+- Actualizado el proceso de creación de noticias para guardar tanto el resumen original como su traducción
 
 ### Seguridad
 - Implementación de manejo seguro de credenciales
@@ -27,6 +32,11 @@
 - Creación de README.md con instrucciones detalladas
 - Documentación de la estructura del proyecto
 - Guía de configuración y requisitos
+
+### Technical Details
+- Se utiliza la API de DeepSeek para realizar las traducciones
+- El servicio de traducción mantiene el mismo tono y estilo del texto original
+- La traducción se realiza después de generar el resumen y antes de crear el audio
 
 ## Próximas Mejoras
 - Implementación de programación automática

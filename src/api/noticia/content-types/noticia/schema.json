@@ -15,24 +15,27 @@
       "type": "string",
       "required": true
     },
-    "description": {
-      "type": "text"
-    },
     "link": {
       "type": "string",
+      "required": true,
       "unique": true
     },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "description_es": {
+      "type": "text"
+    },
     "pubDate": {
-      "type": "datetime"
+      "type": "datetime",
+      "required": true
     },
     "imagen": {
       "type": "string"
     },
     "audioUrl": {
       "type": "string"
-    },
-    "description_es": {
-      "type": "text"
     }
   }
 }

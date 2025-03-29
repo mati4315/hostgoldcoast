@@ -9,6 +9,7 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 const { cleanHtml, extractImageUrl, formatDate } = require('./services/utils');
 const { createSummary } = require('./services/deepseek');
 const { generateAudio } = require('./services/textToSpeech');
+const { translateToSpanish } = require('./services/translate');
 
 const STRAPI_URL = 'http://localhost:1337/api';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -69,6 +70,13 @@ async function fetchAndSaveNews() {
                 console.log(summary);
                 console.log('----------------------------------------\n');
 
+                // Traducir el resumen al español
+                console.log('Traduciendo resumen al español...');
+                const summary_es = await translateToSpanish(summary);
+                console.log('\nResumen traducido:');
+                console.log(summary_es);
+                console.log('----------------------------------------\n');
+
                 // Generar audio del resumen
                 const audioUrl = await generateAudio(summary, latestNews.title);
 
@@ -78,6 +86,7 @@ async function fetchAndSaveNews() {
                         title: latestNews.title,
                         link: latestNews.link,
                         description: summary,
+                        description_es: summary_es,
                         pubDate: new Date(latestNews.pubDate),
                         publishedAt: new Date(),
                         imagen: imageUrl,
