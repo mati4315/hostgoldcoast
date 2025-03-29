@@ -122,10 +122,16 @@ coverage
 ############################
 
 .env
+.env.local
 license.txt
 exports
-.strapi
+*.cache
 dist
 build
 .strapi-updater.json
 .strapi-cloud.json
+
+############################
+# Google Cloud
+############################
+config/google-credentials.json
