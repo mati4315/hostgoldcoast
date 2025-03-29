@@ -386,6 +386,7 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
+    description_es: Schema.Attribute.Text;
     imagen: Schema.Attribute.String;
     link: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;

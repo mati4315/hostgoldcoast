@@ -30,6 +30,9 @@
     },
     "audioUrl": {
       "type": "string"
+    },
+    "description_es": {
+      "type": "text"
     }
   }
 }
