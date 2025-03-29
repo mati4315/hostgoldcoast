@@ -89,12 +89,13 @@ public/uploads/*
 # Node.js
 ############################
 
-node_modules/
-.env
-.env.*
-!.env.example
-package-lock.json
-yarn.lock
+lib-cov
+lcov.info
+pids
+logs
+results
+node_modules
+.node_history
 
 ############################
 # Package managers
@@ -120,18 +121,11 @@ coverage
 # Strapi
 ############################
 
+.env
 license.txt
 exports
-*.cache
+.strapi
 dist
 build
 .strapi-updater.json
 .strapi-cloud.json
-
-############################
-# IDE
-############################
-.idea
-.vscode
-*.swp
-*.swo

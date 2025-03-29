@@ -6,10 +6,53 @@ const axios = require('axios');
 const STRAPI_URL = 'http://localhost:1337/api';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 const RSS_FEED_URL = process.env.RSS_FEED_URL;
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0]; // Retorna solo YYYY-MM-DD
+}
+
+async function createSummary(text) {
+    try {
+        const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
+            model: "deepseek-chat",
+            messages: [
+                {
+                    role: "system",
+                    content: "Eres un experto en crear resúmenes concisos y claros. Tu tarea es resumir el texto proporcionado usando palabras sencillas y manteniendo la información más importante. Devuelve solo el texto del resumen, sin títulos ni formato especial."
+                },
+                {
+                    role: "user",
+                    content: `Por favor, crea un resumen conciso y claro del siguiente texto usando palabras sencillas:\n\n${text}`
+                }
+            ],
+            temperature: 0.7,
+            max_tokens: 500
+        }, {
+            headers: {
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // Limpiar el formato del resumen
+        let summary = response.data.choices[0].message.content.trim();
+        
+        // Eliminar marcadores de formato
+        summary = summary.replace(/\*\*/g, '')  // Eliminar **
+                        .replace(/\*/g, '')      // Eliminar *
+                        .replace(/^Resumen:?\s*/i, '')  // Eliminar "Resumen:" al inicio
+                        .replace(/^Resumen conciso:?\s*/i, '')  // Eliminar "Resumen conciso:" al inicio
+                        .replace(/\n+/g, ' ')    // Reemplazar saltos de línea por espacios
+                        .replace(/\s+/g, ' ')    // Eliminar espacios múltiples
+                        .trim();                 // Eliminar espacios al inicio y final
+
+        return summary;
+    } catch (error) {
+        console.error('Error al crear el resumen:', error.message);
+        return text; // Si hay un error, devolver el texto original
+    }
 }
 
 function cleanHtml(html) {
@@ -115,31 +158,46 @@ async function fetchAndSaveNews() {
             });
 
             if (response.data.data.length === 0) {
+                // Crear resumen con DeepSeek
+                console.log('Creando resumen con DeepSeek...');
+                const summary = await createSummary(fullDescription);
+                console.log('\nResumen generado:');
+                console.log(summary);
+                console.log('----------------------------------------\n');
+
                 // Crear nueva noticia
                 const postData = {
                     data: {
                         title: latestNews.title,
                         link: latestNews.link,
-                        description: fullDescription,
+                        description: summary,
                         published_date: formatDate(latestNews.pubDate),
                         publishedAt: formatDate(new Date()),
                         imagen: imageUrl
                     }
                 };
 
-                await axios.post(`${STRAPI_URL}/noticias`, postData, {
-                    headers: {
-                        'Authorization': `Bearer ${API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                console.log('✅ Nueva noticia creada exitosamente');
+                try {
+                    const createResponse = await axios.post(`${STRAPI_URL}/noticias`, postData, {
+                        headers: {
+                            'Authorization': `Bearer ${API_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log('✅ Nueva noticia creada exitosamente');
+                } catch (createError) {
+                    console.error('Error al crear la noticia:', createError.response?.data || createError.message);
+                    console.error('Datos enviados:', JSON.stringify(postData, null, 2));
+                }
             } else {
                 console.log('ℹ️ La noticia ya existe en la base de datos');
             }
         } catch (error) {
-            console.error(`❌ Error procesando la noticia: ${error.response?.data || error.message}`);
+            console.error('Error al procesar la noticia:', error.response?.data || error.message);
+            if (error.response) {
+                console.error('Estado de la respuesta:', error.response.status);
+                console.error('Datos de la respuesta:', error.response.data);
+            }
         }
         
         console.log('\nProceso de scraping completado.');
