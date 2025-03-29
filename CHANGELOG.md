@@ -52,7 +52,11 @@
 - Optimizada la integración con DeepSeek API
 - Mejorado el manejo de errores en la generación de timestamps
 - Ajustados los parámetros de la API para mejor rendimiento
+- Simplificado el cálculo de duración de audio
+- Actualizada la URL del feed RSS
 
 ### Fixed
 - Corregido el modelo de DeepSeek en la generación de timestamps
-- Mejorado el sistema de fallback para timestamps cuando falla la API 
+- Mejorado el sistema de fallback para timestamps cuando falla la API
+- Eliminadas dependencias no utilizadas
+- Corregido el formato del archivo .env 

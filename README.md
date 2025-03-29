@@ -1,10 +1,5 @@
 # Strapi News Scraper
 
-para crear noticia de forma manual utiliza el siguiente commando 
-
-node scripts/scrape.js
-
-
 Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el contenido para generar resúmenes y audio.
 
 ## Características
@@ -42,6 +37,8 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
    NODE_ENV=development
    GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
    DEEPSEEK_API_KEY=tu_api_key
+   STRAPI_API_TOKEN=tu_token
+   RSS_FEED_URL=url_del_feed_rss
    ```
 
 4. Inicia el servidor Strapi:
@@ -95,6 +92,7 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 - Integración con Google Cloud Text-to-Speech
 - Generación automática de timestamps
 - Sistema de sincronización de audio y texto
+- Cálculo optimizado de duración de audio
 
 ### Timestamps
 - Generación automática de timestamps
