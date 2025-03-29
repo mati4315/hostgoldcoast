@@ -1,4 +1,5 @@
 const axios = require('axios');
+const prompts = require('../../config/prompts');
 
 async function translateToSpanish(text) {
     try {
@@ -7,15 +8,15 @@ async function translateToSpanish(text) {
             messages: [
                 {
                     role: "system",
-                    content: "Eres un traductor profesional. Tu tarea es traducir el siguiente texto al español, manteniendo el mismo tono y estilo, pero adaptándolo naturalmente al español."
+                    content: prompts.translation.system
                 },
                 {
                     role: "user",
                     content: text
                 }
             ],
-            temperature: 0.7,
-            max_tokens: 1000
+            temperature: prompts.translation.temperature,
+            max_tokens: prompts.translation.maxTokens
         }, {
             headers: {
                 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,

@@ -1,5 +1,10 @@
 # Strapi News Scraper
 
+para crear noticia de forma manual utiliza el siguiente commando 
+
+node scripts/scrape.js
+
+
 Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el contenido para generar resúmenes y audio.
 
 ## Características

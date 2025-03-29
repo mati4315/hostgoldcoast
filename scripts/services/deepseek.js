@@ -1,4 +1,5 @@
 const axios = require('axios');
+const prompts = require('../../config/prompts');
 
 /**
  * Crea un resumen del texto usando la API de DeepSeek
@@ -12,14 +13,15 @@ async function createSummary(text) {
       messages: [
         {
           role: "system",
-          content: "Eres un asistente experto en crear resúmenes concisos y claros. Tu tarea es resumir el texto proporcionado en un párrafo corto, manteniendo los puntos clave y la información más relevante. No uses títulos ni formato especial, solo el texto del resumen."
+          content: prompts.summary.system
         },
         {
           role: "user",
           content: text
         }
       ],
-      temperature: 0.7
+      temperature: prompts.summary.temperature,
+      max_tokens: prompts.summary.maxTokens
     }, {
       headers: {
         'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
@@ -27,21 +29,10 @@ async function createSummary(text) {
       }
     });
 
-    let summary = response.data.choices[0].message.content;
-    
-    // Limpiar el formato del resumen
-    summary = summary
-      .replace(/\*\*/g, '') // Eliminar negrita
-      .replace(/\*/g, '')   // Eliminar cursiva
-      .replace(/^Resumen:?\s*/i, '') // Eliminar "Resumen:" al inicio
-      .replace(/\n/g, ' ')  // Eliminar saltos de línea
-      .replace(/\s+/g, ' ') // Eliminar espacios múltiples
-      .trim();              // Eliminar espacios al inicio y final
-
-    return summary;
+    return response.data.choices[0].message.content.trim();
   } catch (error) {
-    console.error('Error al crear el resumen:', error);
-    return text.substring(0, 200) + '...'; // Fallback a un resumen simple
+    console.error('Error al crear el resumen:', error.message);
+    throw error;
   }
 }
 

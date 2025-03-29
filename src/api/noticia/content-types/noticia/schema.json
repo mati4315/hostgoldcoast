@@ -36,6 +36,9 @@
     },
     "audioUrl": {
       "type": "string"
+    },
+    "timestamps": {
+      "type": "json"
     }
   }
 }

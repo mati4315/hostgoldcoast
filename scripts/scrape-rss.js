@@ -10,6 +10,7 @@ const { cleanHtml, extractImageUrl, formatDate } = require('./services/utils');
 const { createSummary } = require('./services/deepseek');
 const { generateAudio } = require('./services/textToSpeech');
 const { translateToSpanish } = require('./services/translate');
+const { generateTimestamps } = require('./services/timestamps');
 
 const STRAPI_URL = 'http://localhost:1337/api';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -78,7 +79,14 @@ async function fetchAndSaveNews() {
                 console.log('----------------------------------------\n');
 
                 // Generar audio del resumen
-                const audioUrl = await generateAudio(summary, latestNews.title);
+                console.log('Generando audio del resumen...');
+                const { url: audioUrl, duration: audioDuration } = await generateAudio(summary, latestNews.title);
+                console.log('Audio generado exitosamente');
+
+                // Generar timestamps
+                console.log('Generando timestamps...');
+                const timestamps = await generateTimestamps(summary, audioDuration);
+                console.log('Timestamps generados exitosamente');
 
                 // Crear nueva noticia
                 const postData = {
@@ -90,7 +98,8 @@ async function fetchAndSaveNews() {
                         pubDate: new Date(latestNews.pubDate),
                         publishedAt: new Date(),
                         imagen: imageUrl,
-                        audioUrl: audioUrl
+                        audioUrl: audioUrl,
+                        timestamps: timestamps
                     }
                 };
 
@@ -107,24 +116,16 @@ async function fetchAndSaveNews() {
                     console.error('Datos enviados:', JSON.stringify(postData, null, 2));
                 }
             } else {
-                console.log('ℹ️ La noticia ya existe en la base de datos');
+                console.log('La noticia ya existe en la base de datos');
             }
         } catch (error) {
             console.error('Error al procesar la noticia:', error.response?.data || error.message);
-            if (error.response) {
-                console.error('Estado de la respuesta:', error.response.status);
-                console.error('Datos de la respuesta:', error.response.data);
-            }
+            console.error('Estado de la respuesta:', error.response?.status);
+            console.error('Datos de la respuesta:', error.response?.data);
         }
-        
-        console.log('\nProceso de scraping completado.');
     } catch (error) {
-        console.error('Error al procesar el feed RSS:', error);
+        console.error('Error al obtener el feed RSS:', error.message);
     }
 }
 
-// Ejecutar el scraping
-fetchAndSaveNews().then(() => process.exit(0)).catch((error) => {
-    console.error('Error:', error);
-    process.exit(1);
-}); 
+fetchAndSaveNews(); 
