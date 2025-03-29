@@ -2,7 +2,6 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const ffmpeg = require('fluent-ffmpeg');
 
 // Configuración del cliente de Google Cloud Text-to-Speech
 const client = new textToSpeech.TextToSpeechClient({
@@ -10,29 +9,17 @@ const client = new textToSpeech.TextToSpeechClient({
 });
 
 /**
- * Obtiene la duración real de un archivo MP3 usando ffmpeg
+ * Calcula la duración aproximada del audio basado en el tamaño del archivo
  * @param {string} filePath - Ruta al archivo MP3
- * @returns {Promise<number>} - Duración en segundos
+ * @returns {number} - Duración en segundos
  */
-function getDuration(filePath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        console.error('Error al obtener la duración del audio:', err);
-        // Fallback al cálculo basado en tamaño si falla ffmpeg
-        const fileSize = fs.statSync(filePath).size;
-        const bitrate = 128000;
-        const estimatedDuration = Math.ceil((fileSize * 8) / bitrate);
-        console.log('Usando duración estimada:', estimatedDuration, 'segundos');
-        resolve(estimatedDuration);
-        return;
-      }
-
-      const duration = metadata.format.duration;
-      console.log('Duración real del audio:', duration, 'segundos');
-      resolve(Math.ceil(duration));
-    });
-  });
+function calculateDuration(filePath) {
+  const fileSize = fs.statSync(filePath).size;
+  const bitrate = 128000; // 128 kbps para MP3
+  const duration = Math.ceil((fileSize * 8) / bitrate);
+  console.log('Duración calculada del audio:', duration, 'segundos');
+  console.log('Tamaño del archivo:', fileSize, 'bytes');
+  return duration;
 }
 
 /**
@@ -71,8 +58,8 @@ async function generateAudio(text, title) {
     // Escribir el archivo de audio
     fs.writeFileSync(filePath, audioContent, 'binary');
 
-    // Obtener la duración real del audio
-    const durationInSeconds = await getDuration(filePath);
+    // Calcular la duración del audio
+    const durationInSeconds = calculateDuration(filePath);
 
     // Devolver la URL del archivo y su duración
     return {
