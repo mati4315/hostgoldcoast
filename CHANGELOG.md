@@ -43,4 +43,16 @@
 - Sistema de caché para optimizar llamadas a APIs
 - Soporte para múltiples fuentes RSS
 - Más opciones de configuración para audio
-- Mejoras en el manejo de errores y logging 
+- Mejoras en el manejo de errores y logging
+
+## [Unreleased]
+
+### Changed
+- Mejorado el sistema de generación de timestamps para audio
+- Optimizada la integración con DeepSeek API
+- Mejorado el manejo de errores en la generación de timestamps
+- Ajustados los parámetros de la API para mejor rendimiento
+
+### Fixed
+- Corregido el modelo de DeepSeek en la generación de timestamps
+- Mejorado el sistema de fallback para timestamps cuando falla la API 

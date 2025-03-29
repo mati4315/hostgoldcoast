@@ -1,78 +1,112 @@
-# Sistema de Noticias con Resúmenes y Audio
+# Strapi News Scraper
 
-Este proyecto es un sistema automatizado que obtiene noticias de fuentes RSS, genera resúmenes usando IA, los traduce al español y crea versiones de audio.
+Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el contenido para generar resúmenes y audio.
 
 ## Características
 
 - Scraping automático de feeds RSS
-- Generación de resúmenes usando DeepSeek
-- Traducción automática al español
+- Generación de resúmenes usando DeepSeek AI
 - Conversión de texto a audio usando Google Cloud Text-to-Speech
-- Almacenamiento en Strapi CMS
-- Sistema de verificación de duplicados
+- Generación automática de timestamps para sincronización de audio
+- Sistema de fallback robusto para manejo de errores
+- Integración con Strapi CMS
 
 ## Requisitos
 
-- Node.js v18 o superior
-- PostgreSQL
-- Cuenta en Google Cloud con Text-to-Speech API habilitada
+- Node.js 18 o superior
+- PostgreSQL 14 o superior
+- Cuenta de Google Cloud con Text-to-Speech API habilitada
 - API Key de DeepSeek
 
 ## Configuración
 
-1. Clonar el repositorio
-2. Instalar dependencias: `npm install`
-3. Configurar variables de entorno en `.env`:
+1. Clona el repositorio
+2. Instala las dependencias:
+   ```bash
+   npm install
    ```
-   STRAPI_API_TOKEN=tu_token_aqui
-   RSS_FEED_URL=url_del_feed_rss
-   DEEPSEEK_API_KEY=tu_api_key_aqui
+3. Configura las variables de entorno en `.env`:
    ```
-4. Configurar credenciales de Google Cloud en `config/google-credentials.json`
+   DATABASE_CLIENT=postgres
+   DATABASE_HOST=127.0.0.1
+   DATABASE_PORT=5432
+   DATABASE_NAME=strapi
+   DATABASE_USERNAME=postgres
+   DATABASE_PASSWORD=tu_contraseña
+   DATABASE_SSL=false
+   NODE_ENV=development
+   GOOGLE_APPLICATION_CREDENTIALS=./google-credentials.json
+   DEEPSEEK_API_KEY=tu_api_key
+   ```
+
+4. Inicia el servidor Strapi:
+   ```bash
+   npm run develop
+   ```
+
+## Uso
+
+1. Configura las fuentes RSS en el panel de administración de Strapi
+2. Ejecuta el script de scraping:
+   ```bash
+   node scripts/scrape.js
+   ```
 
 ## Estructura del Proyecto
 
 ```
-├── src/
-│   └── api/
-│       └── noticia/
-│           └── content-types/
-│               └── noticia/
-│                   └── schema.json
-├── scripts/
-│   ├── scrape-rss.js
-│   └── services/
-│       ├── deepseek.js
-│       ├── textToSpeech.js
-│       ├── translate.js
-│       └── utils.js
 ├── config/
-│   └── google-credentials.json
-└── .env
+│   ├── prompts.js         # Configuración de prompts para DeepSeek
+│   └── database.js        # Configuración de la base de datos
+├── scripts/
+│   ├── scrape.js         # Script principal de scraping
+│   └── services/
+│       ├── rss.js        # Servicio de scraping RSS
+│       ├── summary.js    # Generación de resúmenes
+│       ├── translation.js # Traducción de contenido
+│       ├── audio.js      # Generación de audio
+│       └── timestamps.js # Generación de timestamps
+└── src/
+    └── api/
+        └── news/
+            └── content-types/
+                └── news/
+                    └── schema.json  # Modelo de datos
 ```
 
-## Campos del Modelo Noticia
+## Características Principales
 
-- `title`: Título de la noticia
-- `link`: URL de la noticia original
-- `description`: Resumen en inglés generado por DeepSeek
-- `description_es`: Traducción al español del resumen
-- `pubDate`: Fecha de publicación original
-- `imagen`: URL de la imagen principal
-- `audioUrl`: URL del archivo de audio generado
-- `prompt`: Prompt utilizado para generar el resumen
+### Scraping RSS
+- Soporte para múltiples fuentes RSS
+- Procesamiento automático de contenido
+- Manejo de errores y reintentos
 
-## Uso
+### Generación de Resúmenes
+- Uso de DeepSeek AI para resúmenes
+- Formato optimizado para niños
+- Sistema de fallback para errores
 
-1. Iniciar Strapi: `npm run develop`
-2. Ejecutar el script de scraping: `node scripts/scrape-rss.js`
+### Generación de Audio
+- Integración con Google Cloud Text-to-Speech
+- Generación automática de timestamps
+- Sistema de sincronización de audio y texto
 
-## Notas Técnicas
+### Timestamps
+- Generación automática de timestamps
+- Sistema de fallback para errores de API
+- Formato optimizado para sincronización
 
-- El sistema utiliza DeepSeek para generar resúmenes y traducciones
-- Las traducciones mantienen el mismo tono y estilo del texto original
-- Los archivos de audio se generan en inglés
-- El sistema verifica duplicados antes de crear nuevas entradas
+## Contribuir
+
+1. Fork el repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 # hostgoldcoast
 
