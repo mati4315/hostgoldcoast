@@ -1,12 +1,26 @@
 # Strapi News Scraper
 
+```bash
+# Comando para ejecutar el scraping de noticias RSS, generar resúmenes, 
+# audio y timestamps automáticamente
+node scripts/scrape-rss.js
+```
+
 Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el contenido para generar resúmenes y audio.
+
+
+este scripts es para lanzar la prueba crear nueva publicacion
+
+node scripts/scrape-rss.js
+
+
 
 ## Características
 
 - Scraping automático de feeds RSS
 - Generación de resúmenes usando DeepSeek AI
 - Conversión de texto a audio usando Google Cloud Text-to-Speech
+- **Cálculo preciso de la duración de audio usando FFmpeg**
 - Generación automática de timestamps para sincronización de audio
 - Sistema de fallback robusto para manejo de errores
 - Integración con Strapi CMS
@@ -18,6 +32,7 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 - PostgreSQL 14 o superior
 - Cuenta de Google Cloud con Text-to-Speech API habilitada
 - API Key de DeepSeek
+- **FFmpeg instalado en el sistema** para cálculo preciso de duración de audio
 
 ## Configuración
 
@@ -42,8 +57,13 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
    RSS_FEED_URL=url_del_feed_rss
    JWT_SECRET=tu_jwt_secret
    ```
+   
+4. **Asegúrate de tener FFmpeg instalado en tu sistema**:
+   - Windows: Instala desde [ffmpeg.org](https://ffmpeg.org/download.html) y añade al PATH
+   - macOS: `brew install ffmpeg`
+   - Linux: `sudo apt install ffmpeg` o equivalente según distribución
 
-4. Inicia el servidor Strapi:
+5. Inicia el servidor Strapi:
    ```bash
    npm run develop
    ```
@@ -53,7 +73,7 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 1. Configura las fuentes RSS en el panel de administración de Strapi
 2. Ejecuta el script de scraping:
    ```bash
-   node scripts/scrape.js
+   node scripts/scrape-rss.js
    ```
 
 ## API de Autenticación
@@ -177,9 +197,9 @@ Content-Type: application/json
 
 ### Generación de Audio
 - Integración con Google Cloud Text-to-Speech
+- **Cálculo de duración exacta con FFmpeg**
 - Generación automática de timestamps
 - Sistema de sincronización de audio y texto
-- Cálculo optimizado de duración de audio
 
 ### Timestamps
 - Generación automática de timestamps

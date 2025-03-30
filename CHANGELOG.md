@@ -1,6 +1,34 @@
-# Registro de Cambios
+# Changelog
 
-## [1.0.0] - 2025-03-29
+Todos los cambios notables de este proyecto serán documentados en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
+
+## [Unreleased]
+
+## [1.0.1] - 2025-03-30
+
+### Añadido
+- Integración con FFmpeg para obtener la duración exacta de los archivos de audio
+- Sistema de fallback para calcular la duración del audio basado en el tamaño del archivo si FFmpeg falla
+- Timestamps más precisos gracias a la duración exacta del audio
+
+### Cambiado
+- Eliminado el almacenamiento de la duración del audio en la base de datos, ahora solo se calcula y utiliza durante el proceso
+
+### Corregido
+- Mejora en precisión de los timestamps para sincronización de audio y texto
+
+## [1.0.0] - 2025-03-01
+
+### Añadido
+- Scraping automático de feeds RSS
+- Generación de resúmenes usando DeepSeek AI
+- Traducción automática de resúmenes al español
+- Conversión de texto a audio usando Google Cloud Text-to-Speech
+- Generación automática de timestamps para sincronización
+- API de autenticación para registro y login de usuarios
+- Integración con Strapi CMS
 
 ### Agregado
 - Implementación inicial del sistema de scraping RSS
@@ -11,9 +39,6 @@
 - Nuevo campo `description_es` al modelo Noticia para almacenar la traducción al español
 - Nuevo servicio de traducción usando la API de DeepSeek
 - Integración de traducción automática al español en el proceso de scraping
-- Sistema de autenticación para integración con Vue.js
-- API de registro y login de usuarios
-- Configuración CORS para integración con frontend
 
 ### Mejorado
 - Reorganización del código en módulos separados:
@@ -25,29 +50,21 @@
 - Sistema de nombres de archivo para audio basado en títulos
 - Modificado el script de scraping para incluir la traducción al español
 - Actualizado el proceso de creación de noticias para guardar tanto el resumen original como su traducción
-- Configuración de JWT para autenticación segura
-- Documentación de integración con Vue.js
 
 ### Seguridad
 - Implementación de manejo seguro de credenciales
 - Protección de archivos sensibles en `.gitignore`
 - Validación de datos antes de crear entradas
-- Implementación de JWT para autenticación
-- Configuración de CORS para seguridad
 
 ### Documentación
 - Creación de README.md con instrucciones detalladas
 - Documentación de la estructura del proyecto
 - Guía de configuración y requisitos
-- Documentación de la API de autenticación
-- Ejemplos de integración con Vue.js
 
 ### Technical Details
 - Se utiliza la API de DeepSeek para realizar las traducciones
 - El servicio de traducción mantiene el mismo tono y estilo del texto original
 - La traducción se realiza después de generar el resumen y antes de crear el audio
-- Implementación de JWT con expiración de 30 días
-- Configuración CORS para permitir peticiones desde Vue.js
 
 ## Próximas Mejoras
 - Implementación de programación automática
@@ -55,8 +72,6 @@
 - Soporte para múltiples fuentes RSS
 - Más opciones de configuración para audio
 - Mejoras en el manejo de errores y logging
-- Implementación de recuperación de contraseña
-- Sistema de roles y permisos más granular
 
 ## [Unreleased]
 
