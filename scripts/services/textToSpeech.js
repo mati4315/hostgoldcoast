@@ -2,6 +2,7 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const ffmpeg = require('fluent-ffmpeg');
 
 // Configuración del cliente de Google Cloud Text-to-Speech
 const client = new textToSpeech.TextToSpeechClient({
@@ -9,17 +10,29 @@ const client = new textToSpeech.TextToSpeechClient({
 });
 
 /**
- * Calcula la duración aproximada del audio basado en el tamaño del archivo
+ * Obtiene la duración exacta del archivo de audio usando FFmpeg
  * @param {string} filePath - Ruta al archivo MP3
- * @returns {number} - Duración en segundos
+ * @returns {Promise<number>} - Duración en segundos
  */
-function calculateDuration(filePath) {
-  const fileSize = fs.statSync(filePath).size;
-  const bitrate = 128000; // 128 kbps para MP3
-  const duration = Math.ceil((fileSize * 8) / bitrate);
-  console.log('Duración calculada del audio:', duration, 'segundos');
-  console.log('Tamaño del archivo:', fileSize, 'bytes');
-  return duration;
+function getExactAudioDuration(filePath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) {
+        console.error('Error al obtener la duración exacta:', err.message);
+        // Fallback al cálculo por tamaño si falla FFmpeg
+        const fileSize = fs.statSync(filePath).size;
+        const bitrate = 128000; // 128 kbps para MP3
+        const duration = Math.ceil((fileSize * 8) / bitrate);
+        console.log('Usando duración estimada por tamaño:', duration, 'segundos');
+        resolve(duration);
+        return;
+      }
+      
+      const duration = Math.round(metadata.format.duration);
+      console.log('Duración exacta del audio:', duration, 'segundos');
+      resolve(duration);
+    });
+  });
 }
 
 /**
@@ -57,14 +70,16 @@ async function generateAudio(text, title) {
 
     // Escribir el archivo de audio
     fs.writeFileSync(filePath, audioContent, 'binary');
+    console.log('Archivo de audio creado:', filePath);
+    console.log('Tamaño del archivo:', fs.statSync(filePath).size, 'bytes');
 
-    // Calcular la duración del audio
-    const durationInSeconds = calculateDuration(filePath);
-
+    // Obtener la duración exacta del audio usando FFmpeg
+    const duration = await getExactAudioDuration(filePath);
+      
     // Devolver la URL del archivo y su duración
     return {
       url: `/uploads/audio/${fileName}`,
-      duration: durationInSeconds
+      duration: duration
     };
   } catch (error) {
     console.error('Error al generar el audio:', error);
