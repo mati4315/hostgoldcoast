@@ -10,6 +10,7 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 - Generación automática de timestamps para sincronización de audio
 - Sistema de fallback robusto para manejo de errores
 - Integración con Strapi CMS
+- API de autenticación para registro y login de usuarios
 
 ## Requisitos
 
@@ -39,6 +40,7 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
    DEEPSEEK_API_KEY=tu_api_key
    STRAPI_API_TOKEN=tu_token
    RSS_FEED_URL=url_del_feed_rss
+   JWT_SECRET=tu_jwt_secret
    ```
 
 4. Inicia el servidor Strapi:
@@ -52,6 +54,91 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 2. Ejecuta el script de scraping:
    ```bash
    node scripts/scrape.js
+   ```
+
+## API de Autenticación
+
+### Endpoints
+
+#### Registro de Usuario
+```http
+POST /api/auth/local/register
+Content-Type: application/json
+
+{
+  "username": "usuario",
+  "email": "usuario@ejemplo.com",
+  "password": "contraseña"
+}
+```
+
+#### Login
+```http
+POST /api/auth/local
+Content-Type: application/json
+
+{
+  "identifier": "usuario@ejemplo.com",
+  "password": "contraseña"
+}
+```
+
+### Integración con Vue.js
+
+1. Instala las dependencias necesarias en tu proyecto Vue:
+   ```bash
+   npm install axios
+   ```
+
+2. Configura el cliente HTTP:
+   ```javascript
+   import axios from 'axios';
+
+   const api = axios.create({
+     baseURL: 'http://localhost:1337/api',
+     headers: {
+       'Content-Type': 'application/json',
+     },
+   });
+
+   // Interceptor para agregar el token a las peticiones
+   api.interceptors.request.use((config) => {
+     const token = localStorage.getItem('token');
+     if (token) {
+       config.headers.Authorization = `Bearer ${token}`;
+     }
+     return config;
+   });
+   ```
+
+3. Ejemplo de registro de usuario:
+   ```javascript
+   async function registerUser(userData) {
+     try {
+       const response = await api.post('/auth/local/register', userData);
+       const { jwt, user } = response.data;
+       localStorage.setItem('token', jwt);
+       return user;
+     } catch (error) {
+       console.error('Error al registrar usuario:', error);
+       throw error;
+     }
+   }
+   ```
+
+4. Ejemplo de login:
+   ```javascript
+   async function loginUser(credentials) {
+     try {
+       const response = await api.post('/auth/local', credentials);
+       const { jwt, user } = response.data;
+       localStorage.setItem('token', jwt);
+       return user;
+     } catch (error) {
+       console.error('Error al iniciar sesión:', error);
+       throw error;
+     }
+   }
    ```
 
 ## Estructura del Proyecto
@@ -98,6 +185,12 @@ Este proyecto es un scraper de noticias que utiliza Strapi como CMS y procesa el
 - Generación automática de timestamps
 - Sistema de fallback para errores de API
 - Formato optimizado para sincronización
+
+### Autenticación
+- Sistema de registro y login de usuarios
+- JWT para autenticación segura
+- CORS configurado para integración con Vue.js
+- Manejo de sesiones y tokens
 
 ## Contribuir
 
