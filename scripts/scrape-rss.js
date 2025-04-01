@@ -9,8 +9,8 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 const { cleanHtml, extractImageUrl, formatDate } = require('./services/utils');
 const { createSummary } = require('./services/deepseek');
 const { generateAudio } = require('./services/textToSpeech');
-const { translateToSpanish } = require('./services/translate');
 const { generateTimestamps } = require('./services/timestamps');
+const { translateTimestamps } = require('./services/translateTimestamps');
 
 // Configuración y variables de entorno
 const STRAPI_URL = 'http://localhost:1337/api';
@@ -40,7 +40,7 @@ async function fetchAndSaveNews() {
         }
 
         // Tomar solo la noticia más reciente
-        const latestNews = feed.items[0];
+        const latestNews = feed.items[9];
         
         // Extraer la descripción completa del contenido codificado
         const fullDescription = cleanHtml(latestNews['content:encoded'] || latestNews.content || latestNews.description);
@@ -83,13 +83,6 @@ async function fetchAndSaveNews() {
                 console.log(summary);
                 console.log('----------------------------------------\n');
 
-                // Traducir el resumen al español
-                console.log('Traduciendo resumen al español...');
-                const summary_es = await translateToSpanish(summary);
-                console.log('\nResumen traducido:');
-                console.log(summary_es);
-                console.log('----------------------------------------\n');
-
                 // Generar audio del resumen
                 console.log('Generando audio del resumen...');
                 const { url: audioUrl, duration: audioDuration } = await generateAudio(summary, latestNews.title);
@@ -103,19 +96,23 @@ async function fetchAndSaveNews() {
                 console.log('Timestamps generados exitosamente');
                 console.log('Estructura de timestamps:', JSON.stringify(timestamps, null, 2));
 
+                // Traducir timestamps al español
+                console.log('Traduciendo timestamps al español...');
+                const timestampsWithTranslation = await translateTimestamps(timestamps);
+                console.log('Timestamps traducidos exitosamente');
+                console.log('Estructura de timestamps con traducción:', JSON.stringify(timestampsWithTranslation, null, 2));
+
                 // Crear nueva noticia
                 const postData = {
                     data: {
                         title: latestNews.title,
                         link: latestNews.link,
                         description: summary,
-                        description_es: summary_es,
                         pubDate: new Date(latestNews.pubDate),
                         publishedAt: new Date(),
                         imagen: imageUrl,
                         audioUrl: audioUrl,
-                        audioDuration: audioDuration.toString(),
-                        timestamps: timestamps
+                        timestamps: timestampsWithTranslation
                     }
                 };
 

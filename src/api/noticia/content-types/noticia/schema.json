@@ -24,9 +24,6 @@
       "type": "text",
       "required": true
     },
-    "description_es": {
-      "type": "text"
-    },
     "pubDate": {
       "type": "datetime",
       "required": true

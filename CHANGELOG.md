@@ -6,6 +6,27 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+## [1.0.4] - 2025-03-30
+
+### Cambiado
+- Modificada la estructura de timestamps para incluir la traducción al español en el mismo objeto
+- Eliminado el campo `timestamps_es` del modelo de noticias
+- Mejorado el servicio de traducción para trabajar con la nueva estructura
+
+## [1.0.3] - 2025-03-30
+
+### Añadido
+- Nuevo servicio de traducción de timestamps al español usando DeepSeek
+- Campo `timestamps_es` en el modelo de noticias para almacenar los timestamps traducidos
+- Integración de traducción de timestamps en el proceso de scraping
+
+## [1.0.2] - 2025-03-30
+
+### Eliminado
+- Eliminada la funcionalidad de traducción al español
+- Eliminado el campo `description_es` del modelo de noticias
+- Eliminado el servicio de traducción
+
 ## [1.0.1] - 2025-03-30
 
 ### Añadido
