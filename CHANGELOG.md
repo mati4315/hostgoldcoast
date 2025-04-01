@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+## [1.0.5] - 2025-03-30
+
+### Añadido
+- Traducción al portugués para los timestamps
+- Campo `text_pt` en cada timestamp para almacenar la traducción al portugués
+
+### Cambiado
+- Mejorado el servicio de traducción para manejar múltiples idiomas
+- Optimizado el prompt de DeepSeek para traducir a español y portugués simultáneamente
+
 ## [1.0.4] - 2025-03-30
 
 ### Cambiado
