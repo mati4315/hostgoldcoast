@@ -49,7 +49,7 @@ async function generateAudio(text, title) {
       voice: { languageCode: 'en-US', ssmlGender: 'NEUTRAL' },
       audioConfig: { 
         audioEncoding: 'MP3',
-        speakingRate: 1.0,
+        speakingRate: 0.9,
         pitch: 0
       },
     };

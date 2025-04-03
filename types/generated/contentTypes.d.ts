@@ -386,7 +386,6 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text & Schema.Attribute.Required;
-    description_es: Schema.Attribute.Text;
     imagen: Schema.Attribute.String;
     link: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -401,6 +400,7 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     timestamps: Schema.Attribute.JSON;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    title_es: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

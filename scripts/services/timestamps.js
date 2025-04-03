@@ -1,73 +1,75 @@
 const axios = require('axios');
 const prompts = require('../../config/prompts');
 
+/**
+ * Genera timestamps para el texto proporcionado
+ * @param {string} text - Texto a dividir en timestamps
+ * @param {number} audioDuration - Duración total del audio en segundos
+ * @returns {Promise<Array>} - Array de timestamps
+ */
 async function generateTimestamps(text, audioDuration) {
-    console.log('Generando timestamps con los siguientes parámetros:');
-    console.log('Longitud del texto:', text.length, 'caracteres');
-    console.log('Duración del audio:', audioDuration, 'segundos');
-    
-    if (!audioDuration || audioDuration <= 0) {
-        console.warn('⚠️ Advertencia: audioDuration no es válido, usando valor por defecto de 60 segundos');
-        audioDuration = 60;
-    }
-
     try {
-        const systemPrompt = prompts.timestamps.system(audioDuration);
-        console.log('Prompt del sistema:', systemPrompt);
-        
-        const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-            model: "deepseek-chat",
+        console.log('Generando timestamps...');
+        console.log('Generando timestamps con los siguientes parámetros:');
+        console.log(`Longitud del texto: ${text.length} caracteres`);
+        console.log(`Duración del audio: ${audioDuration} segundos`);
+
+        // Preparar el prompt para OpenAI
+        const prompt = `Divide el siguiente texto en segmentos que coincidan con la duración del audio (${audioDuration} segundos). Cada segmento debe tener un tiempo de inicio y fin en formato "min:sec". Responde con un array de objetos JSON con la siguiente estructura exacta:
+
+[
+  {
+    "text": "texto del segmento 1",
+    "start": "00:00",
+    "end": "00:10"
+  },
+  {
+    "text": "texto del segmento 2",
+    "start": "00:10",
+    "end": "00:20"
+  }
+]
+
+Texto a dividir:
+${text}
+
+Responde SOLO con el array JSON, sin explicaciones ni formato markdown.`;
+
+        // Llamar a la API de OpenAI
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4-turbo-preview",
             messages: [
                 {
-                    role: "system",
-                    content: systemPrompt
-                },
-                {
                     role: "user",
-                    content: text
+                    content: prompt
                 }
             ],
-            temperature: prompts.timestamps.temperature,
-            max_tokens: 2000,
-            top_p: 0.95,
-            frequency_penalty: 0,
-            presence_penalty: 0
+            temperature: 0.3,
+            max_tokens: 1000
         }, {
             headers: {
-                'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json'
             }
         });
 
-        if (!response.data || !response.data.choices || !response.data.choices[0]) {
-            throw new Error('Respuesta inválida de la API');
-        }
-
-        const content = response.data.choices[0].message.content.trim();
-        console.log('Respuesta de la API:', content);
+        // Extraer y limpiar la respuesta
+        const content = response.data.choices[0].message.content;
+        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
         
-        // Intentar extraer el JSON de la respuesta
-        let jsonStr = content;
-        if (content.includes('[') && content.includes(']')) {
-            jsonStr = content.substring(content.indexOf('['), content.lastIndexOf(']') + 1);
-        }
-
         try {
-            const timestamps = JSON.parse(jsonStr);
+            const timestamps = JSON.parse(cleanContent);
             console.log('Timestamps generados:', JSON.stringify(timestamps, null, 2));
+            console.log('Timestamps generados exitosamente');
             return timestamps;
         } catch (parseError) {
-            console.error('Error al parsear JSON:', parseError);
-            console.log('Usando sistema de fallback para timestamps');
-            return generateBasicTimestamps(text, audioDuration);
+            console.error('Error al parsear la respuesta de OpenAI:', parseError);
+            console.error('Contenido recibido:', cleanContent);
+            throw new Error('Error al procesar la respuesta de timestamps');
         }
     } catch (error) {
         console.error('Error al generar timestamps:', error.message);
-        if (error.response) {
-            console.error('Detalles del error:', error.response.data);
-        }
-        console.log('Usando sistema de fallback para timestamps');
-        return generateBasicTimestamps(text, audioDuration);
+        throw error;
     }
 }
 

@@ -10,12 +10,13 @@ const { cleanHtml, extractImageUrl, formatDate } = require('./services/utils');
 const { createSummary } = require('./services/deepseek');
 const { generateAudio } = require('./services/textToSpeech');
 const { generateTimestamps } = require('./services/timestamps');
-const { translateTimestamps } = require('./services/translateTimestamps');
+const { translateTimestamps } = require('./services/translate');
 
 // Configuración y variables de entorno
 const STRAPI_URL = 'http://localhost:1337/api';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 const RSS_FEED_URL = process.env.RSS_FEED_URL;
+const NUMERO_NOTI = process.env.NUMERO_NOTI;
 
 // Información de depuración
 console.log('🔑 Variables de entorno:');
@@ -40,7 +41,7 @@ async function fetchAndSaveNews() {
         }
 
         // Tomar solo la noticia más reciente
-        const latestNews = feed.items[9];
+        const latestNews = feed.items[parseInt(NUMERO_NOTI)];
         
         // Extraer la descripción completa del contenido codificado
         const fullDescription = cleanHtml(latestNews['content:encoded'] || latestNews.content || latestNews.description);
@@ -79,8 +80,7 @@ async function fetchAndSaveNews() {
                 // Crear resumen con DeepSeek
                 console.log('Creando resumen con DeepSeek...');
                 const summary = await createSummary(fullDescription);
-                console.log('\nResumen generado:');
-                console.log(summary);
+                console.log('\nResumen generado');
                 console.log('----------------------------------------\n');
 
                 // Generar audio del resumen
@@ -88,39 +88,39 @@ async function fetchAndSaveNews() {
                 const { url: audioUrl, duration: audioDuration } = await generateAudio(summary, latestNews.title);
                 console.log('Audio generado exitosamente');
                 console.log('URL del audio:', audioUrl);
-                console.log('Duración del audio:', audioDuration, 'segundos');
+                console.log('----------------------------------------\n');
 
                 // Generar timestamps
                 console.log('Generando timestamps...');
                 const timestamps = await generateTimestamps(summary, audioDuration);
                 console.log('Timestamps generados exitosamente');
-                console.log('Estructura de timestamps:', JSON.stringify(timestamps, null, 2));
-
-                // Traducir timestamps al español
-                console.log('Traduciendo timestamps al español...');
-                const timestampsWithTranslation = await translateTimestamps(timestamps);
+                console.log('----------------------------------------\n');
+               
+                // Traducir timestamps
+                console.log('Traduciendo timestamps al español y portugués...');
+                const translationResult = await translateTimestamps(timestamps, latestNews.title);
+                const timestampsWithTranslation = translationResult.timestamps;
+                const title_es = translationResult.title_es;
                 console.log('Timestamps traducidos exitosamente');
-                console.log('Estructura de timestamps con traducción:', JSON.stringify(timestampsWithTranslation, null, 2));
-
-                // Crear nueva noticia
-                const postData = {
+                 // Crear nueva noticia
+                const data = {
                     data: {
                         title: latestNews.title,
-                        link: latestNews.link,
-                        description: summary,
-                        pubDate: new Date(latestNews.pubDate),
-                        publishedAt: new Date(),
+                        pubDate: new Date(latestNews.pubDate).toISOString(),
+                        publishedAt: new Date().toISOString(),
                         imagen: imageUrl,
                         audioUrl: audioUrl,
+                        link: latestNews.link,
+                        description: latestNews.description || latestNews.title,
+                        title_es: title_es,
                         timestamps: timestampsWithTranslation
                     }
                 };
 
                 console.log('\nCreando nueva noticia en Strapi...');
-                console.log('Datos a enviar:', JSON.stringify(postData, null, 2));
 
                 try {
-                    const createResponse = await axios.post(`${STRAPI_URL}/noticias`, postData, {
+                    const createResponse = await axios.post(`${STRAPI_URL}/noticias`, data, {
                         headers: {
                             'Authorization': `Bearer ${API_TOKEN}`,
                             'Content-Type': 'application/json'

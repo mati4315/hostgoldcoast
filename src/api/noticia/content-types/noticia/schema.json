@@ -36,6 +36,9 @@
     },
     "timestamps": {
       "type": "json"
+    },
+    "title_es": {
+      "type": "string"
     }
   }
 }
