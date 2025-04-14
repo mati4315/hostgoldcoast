@@ -52,8 +52,6 @@ async function fetchAndSaveNews() {
         console.log('\n📰 Detalles de la noticia más reciente:');
         console.log('----------------------------------------');
         console.log(`Título: ${latestNews.title}`);
-        console.log(`Fecha de publicación: ${formatDate(latestNews.pubDate)}`);
-        console.log(`Enlace: ${latestNews.link}`);
         console.log(`Imagen: ${imageUrl || 'No se encontró imagen'}`);
         console.log('----------------------------------------\n');
         
@@ -111,7 +109,7 @@ async function fetchAndSaveNews() {
                         imagen: imageUrl,
                         audioUrl: audioUrl,
                         link: latestNews.link,
-                        description: latestNews.description || latestNews.title,
+                        description: summary,
                         title_es: title_es,
                         timestamps: timestampsWithTranslation
                     }
